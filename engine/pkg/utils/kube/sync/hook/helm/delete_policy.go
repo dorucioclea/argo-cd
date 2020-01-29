@@ -1,10 +1,9 @@
 package helm
 
 import (
+	"github.com/argoproj/argo-cd/engine/pkg/utils/kube/sync/common"
+	resource2 "github.com/argoproj/argo-cd/engine/pkg/utils/resource"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
-	"github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
-	"github.com/argoproj/argo-cd/util/resource"
 )
 
 type DeletePolicy string
@@ -20,19 +19,19 @@ func NewDeletePolicy(p string) (DeletePolicy, bool) {
 	return DeletePolicy(p), p == string(BeforeHookCreation) || p == string(HookSucceeded) || p == string(HookFailed)
 }
 
-var hookDeletePolicies = map[DeletePolicy]v1alpha1.HookDeletePolicy{
-	BeforeHookCreation: v1alpha1.HookDeletePolicyBeforeHookCreation,
-	HookSucceeded:      v1alpha1.HookDeletePolicyHookSucceeded,
-	HookFailed:         v1alpha1.HookDeletePolicyHookFailed,
+var hookDeletePolicies = map[DeletePolicy]common.HookDeletePolicy{
+	BeforeHookCreation: common.HookDeletePolicyBeforeHookCreation,
+	HookSucceeded:      common.HookDeletePolicyHookSucceeded,
+	HookFailed:         common.HookDeletePolicyHookFailed,
 }
 
-func (p DeletePolicy) DeletePolicy() v1alpha1.HookDeletePolicy {
+func (p DeletePolicy) DeletePolicy() common.HookDeletePolicy {
 	return hookDeletePolicies[p]
 }
 
 func DeletePolicies(obj *unstructured.Unstructured) []DeletePolicy {
 	var policies []DeletePolicy
-	for _, text := range resource.GetAnnotationCSVs(obj, "helm.sh/hook-delete-policy") {
+	for _, text := range resource2.GetAnnotationCSVs(obj, "helm.sh/hook-delete-policy") {
 		p, ok := NewDeletePolicy(text)
 		if ok {
 			policies = append(policies, p)

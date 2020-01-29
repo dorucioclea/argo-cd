@@ -1,10 +1,9 @@
 package helm
 
 import (
+	"github.com/argoproj/argo-cd/engine/pkg/utils/kube/sync/common"
+	resource2 "github.com/argoproj/argo-cd/engine/pkg/utils/resource"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-
-	"github.com/argoproj/argo-cd/pkg/apis/application/v1alpha1"
-	"github.com/argoproj/argo-cd/util/resource"
 )
 
 type Type string
@@ -24,20 +23,20 @@ func NewType(t string) (Type, bool) {
 			t == string(PostInstall)
 }
 
-var hookTypes = map[Type]v1alpha1.HookType{
-	PreInstall:  v1alpha1.HookTypePreSync,
-	PreUpgrade:  v1alpha1.HookTypePreSync,
-	PostUpgrade: v1alpha1.HookTypePostSync,
-	PostInstall: v1alpha1.HookTypePostSync,
+var hookTypes = map[Type]common.HookType{
+	PreInstall:  common.HookTypePreSync,
+	PreUpgrade:  common.HookTypePreSync,
+	PostUpgrade: common.HookTypePostSync,
+	PostInstall: common.HookTypePostSync,
 }
 
-func (t Type) HookType() v1alpha1.HookType {
+func (t Type) HookType() common.HookType {
 	return hookTypes[t]
 }
 
 func Types(obj *unstructured.Unstructured) []Type {
 	var types []Type
-	for _, text := range resource.GetAnnotationCSVs(obj, "helm.sh/hook") {
+	for _, text := range resource2.GetAnnotationCSVs(obj, "helm.sh/hook") {
 		t, ok := NewType(text)
 		if ok {
 			types = append(types, t)
